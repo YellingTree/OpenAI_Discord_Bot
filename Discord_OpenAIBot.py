@@ -24,6 +24,7 @@ stop_generation = "END" #Defines the stop word for the api to end text generatio
 top_prob = .9 #Defines the probability mass used for text generation, refer to openai doc for more info
 freq_penailty = 1.8 #Defines the penailty for reused tokens, refer to openai docs.
 bias = {"21017": -100} #Defines tokens that should not be generated, currently the tokens for '###' have a 100% chance of NEVER appaering. Refer to openai docs for more info
+seperator = "\n\n###\n\n" #This is the seperator used to split messages and define each block of the chat. IMPORTANT: use a seperator used in your training data to avoid AI confusion.
 
 #endregion
 
@@ -88,7 +89,7 @@ async def on_ready():
 async def on_message(message):
     if message.content.startswith(chat_command):
         server_id = message.guild.id
-        formatting = " \n\n###\n\n" # Seporator used to seperate each message.
+        formatting = seperator
 
         conversation = GetConversation(server_id)
         user_message = message.content #Content of message send on discord server

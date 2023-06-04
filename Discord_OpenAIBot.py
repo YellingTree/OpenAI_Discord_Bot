@@ -33,12 +33,17 @@ bias = {"21017": -100} #Defines tokens that should not be generated, currently t
 def GetConversation(server_id):
     conversation = ""
     file_path = "./chats/" + str(server_id) + ".txt"
-    if os.path.isfile(file_path):
-        with open(file_path, "r") as conversation_file:
-            conversation = conversation_file.read()
+    if os.path.exists("./chats/"):
+        if os.path.isfile(file_path):
+            with open(file_path, "r") as conversation_file:
+                conversation = conversation_file.read()
+        else:
+            with open(file_path, "w") as new_file:
+                new_file.write("")
     else:
-        with open(file_path, "w") as new_file:
-            new_file.write("")
+        os.makedirs("./chats")
+        with open(file_path, "w") as init_file:
+            init_file.write("")
     return(conversation)
 
 #Save conversation to chat file based on orgin server ID

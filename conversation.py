@@ -5,8 +5,8 @@ import config
 openai.api_key = config.openai_api_key
 class MemoryManagement():
     #Gather conversation from file using server id for filenames
-    def get_conversation(server_id: str):
-        conversation = _IO.manage_file(server_id, "r")
+    async def get_conversation(server_id: str):
+        conversation = await _IO.manage_file(server_id, "r")
         return(conversation)
     #Cuts the top part of the conversation off to reduce length while saving newer messages
     def crop_conversation(conversation: str):
@@ -15,11 +15,11 @@ class MemoryManagement():
         conversation = config.seperator.join(parts[-config.crop_amount])
         return(conversation)
     #Saves conversation to file.
-    def save_conversation(server_id: str, conversation: str):
-        _IO.manage_file(server_id, "w", conversation)
+    async def save_conversation(server_id: str, conversation: str):
+        await _IO.manage_file(server_id, "w", conversation)
     #Clears the conversation file with an empty string
-    def clear_conversation(server_id):
-        _IO.manage_file(server_id, "w", "")
+    async def clear_conversation(server_id):
+        await _IO.manage_file(server_id, "w", "")
 
 class ResponseManagement():
     #Request an response from OpenAI servers and formatting to a basic string
@@ -46,15 +46,15 @@ class ResponseManagement():
             response = "An error has occured on OpenAI servers, try again later."
         return(response, processing_error)
     #Creates a list of messages to be sent out, splitting the response into 2000 char blocks to allow them to be sent via discord
-    def create_messages(server_id: str, response: str, conversation: str, user_message: str, failstate: bool):
+    async def create_messages(server_id: str, response: str, conversation: str, user_message: str, failstate: bool):
         if response == "" or response == " ":
             response = "Generated an empty message."
             failstate = config.delete_empty_messages
         if failstate:
-            MemoryManagement.save_conversation(server_id, conversation)
+            await MemoryManagement.save_conversation(server_id, conversation)
         else:
             updated_conversation = conversation + user_message + config.seperator + response + config.stop_generation + config.seperator
-            MemoryManagement.save_conversation(server_id, updated_conversation)
+            await MemoryManagement.save_conversation(server_id, updated_conversation)
         message_blocks = []
         if len(response) < config.max_characters:
             message_blocks.append(response)
@@ -68,7 +68,7 @@ class ResponseManagement():
            
 class _IO():
     #Checks to make sure conversation file exists, creating one if not
-    def _file_check(server_id: str):
+    async def _file_check(server_id: str):
         current_directory = os.path.dirname(os.path.abspath(__file__))
         chats_dir = os.path.join(current_directory, "chats")
         if not os.path.exists(chats_dir):
@@ -79,8 +79,8 @@ class _IO():
                 conversation_file.write("")
         return(file_path)
     #Manages the conversation file for ease of use.
-    def manage_file(server_id :str, operation: str, data: str = ""):
-        file_path = _IO._file_check(server_id)
+    async def manage_file(server_id :str, operation: str, data: str = ""):
+        file_path = await _IO._file_check(server_id)
         with open(file_path, operation) as managed_file:
             if operation == "w" or operation == "a":
                 managed_file.write(data)
